@@ -167,3 +167,9 @@ p + geom_density() + geom_vline(data = pval.sum.ss, aes(xintercept = mn.pval, co
 
 ```
 
+```{r}
+## Find the P values that are <= 0.05
+
+filter(pval.ss, pvalue <= 0.05)
+```
+
