@@ -173,3 +173,68 @@ p + geom_density() + geom_vline(data = pval.sum.ss, aes(xintercept = mn.pval, co
 filter(pval.ss, pvalue <= 0.05)
 ```
 
+```{r}
+## Doing it a different way..
+n.times <- 1:2000
+n <- c(100)
+bl <- c(0)
+sd.err <- c(0.1, 1, 2, 5)
+
+test.df <- expand.grid(n.times = n.times, n = n, bl = bl, sd.err = sd.err)
+
+for(i in 1:length(test.df$n.times)) {
+  tmp.df <- rand.mod(n = test.df$n[i], b0 = 0, b1 = test.df$bl[i], sd.err = test.df$sd.err[i])
+  tmp.lm <- lm(response ~ predictor, data = tmp.df) 
+  test.df$pval[i] <- summary(tmp.lm)$coefficients["predictor", "Pr(>|t|)"] }
+
+test.df$n <- factor(test.df$n)
+test.df$bl <- factor(test.df$bl)
+test.df$sd.err <- factor(test.df$sd.err)
+```
+
+```{r}
+test.sub <- subset(test.df, sd.err == 5)
+
+p <- ggplot(data = test.sub, aes(pval))
+p + geom_density()
+```
+
+```{r}
+
+with(test.sub, table (pval <= 0.05))/length(test.sub$pval)
+
+```
+
+```{r}
+
+group_by(test.df, sd.err) %>% summarise(sum.tab = table(pval <= 0.05)[2]/length(pval))
+
+```
+
+```{r}
+
+n.times <- 1:2000  
+n <- c(10, 100, 1000)
+b1 <- c(0)
+sd.err <- c(0.1, 1, 2, 5)
+test.df <- expand.grid(n.times = n.times, n = n, b1 = b1, sd.err = sd.err)
+
+for (i in 1:length(test.df$n.times)) {
+tmp.df <- rand.mod(n = test.df$n[i], b0 = 0, b1 = test.df$b1[i], sd.err = test.df$sd.err[i])
+tmp.lm <- lm(response ~ predictor, data = tmp.df)
+test.df$est[i] <- summary(tmp.lm)$coefficients["predictor", "Pr(>|t|)"]
+}
+
+test.df$n <- factor(test.df$n)
+test.df$b1 <- factor(test.df$b1)
+test.df$sd.err <- factor(test.df$sd.err)
+
+```
+
+```{r}
+
+filter(pval.ss, pvalue <= 0.05)
+
+```
+
+
